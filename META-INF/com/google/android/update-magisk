@@ -126,6 +126,11 @@ grep_prop_local() {
   sed -n "s/^$1=//p" "$2" | head -n 1
 }
 
+require_zip_entry() {
+  unzip -lqq "$ZIPFILE" "$1" 2>/dev/null | awk -v entry="$1" '$4 == entry { found=1 } END { exit !found }' ||
+    abort "! Required payload is missing: $1"
+}
+
 if $IS_MAGISK; then
   require_new_magisk() {
     echo "*******************************"
@@ -179,8 +184,8 @@ fi
 unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2 || print "! Failed to extract"
 [ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
-## Extract post-fd-data script
-unzip -o "$ZIPFILE" post-fd-data.sh -d $TMPDIR >&2
+## Extract post-fs-data script
+unzip -o "$ZIPFILE" post-fs-data.sh -d $TMPDIR >&2
 [ ! -f $TMPDIR/module.prop ] && abort "! Unable to extract zip file!"
 
 MODDIRNAME=modules_update
@@ -316,6 +321,17 @@ cd $TMPDIR/$MODID
 unzip -qq "$ZIPFILE" -x "kalifs-*" || print "! Failed to extract"
 #ui_print "* ZIP unpacked"
 
+## Do not modify the device until the package is complete.
+for payload in \
+  data/app/NetHunter.apk \
+  data/app/NetHunterTerminal.apk \
+  data/app/NetHunterKeX.apk \
+  data/app/NetHunterStore.apk \
+  data/app/NetHunterStorePrivilegedExtension.apk \
+  kalifs-minimal-arm64.tar.xz; do
+  require_zip_entry "$payload"
+done
+
 #------------------------------------------------------------------------------
 
 ## Setup environment before installations
@@ -335,7 +351,11 @@ mount -o rw,remount -t auto /system || mount /system || true
 [ $? != 0 ] && mount -o rw,remount -t auto / && SAR=true
 
 ## Additional setup for installing apps via pm
-[[ "$(getenforce)" == "Enforcing" ]] && ENFORCE=true || ENFORCE=false
+if [ "$(getenforce 2>/dev/null || true)" = 'Enforcing' ]; then
+  ENFORCE=true
+else
+  ENFORCE=false
+fi
 $ENFORCE && setenforce 0
 VERIFY=$(settings get global verifier_verify_adb_installs)
 settings put global verifier_verify_adb_installs 0
@@ -472,6 +492,12 @@ fi
   ui_print "* Installing /system/bin binaries"
   cp -r "$TMP/system/bin" "$TARGET/"
   set_perm_recursive "$BIN" 0 0 0755 0755
+}
+
+[ -f "$TMP/tools/pentest-ai.sh" ] && {
+  ui_print "* Installing NetHunter pentest helper"
+  cp "$TMP/tools/pentest-ai.sh" "$BIN/pentest-ai"
+  chmod 0755 "$BIN/pentest-ai"
 }
 
 [ -d $TMP/boot-patcher/system/xbin ] && {

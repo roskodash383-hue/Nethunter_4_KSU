@@ -15,11 +15,31 @@ Flashable Kali NetHunter module for rooted Android with Magisk or KernelSU Next.
 
 ## Requirements
 
-- Rooted Android device with either Magisk (v20.4+) or KernelSU Next installed.
+- Already-rooted Android device with either Magisk (v20.4+) or KernelSU Next installed.
 - Sufficient storage space (at least 500MB free for the module and chroot).
 - Android 8.0+ (Oreo) or higher for optimal app installation.
+- A compatible Wi‑Fi chipset and kernel/firmware support for monitor mode; real support varies by device and driver.
+
+> This project assumes the phone is already rooted. The official ARM64 payloads are intentionally kept out of Git because the chroot archive is large; download the archive and let the build script extract it locally.
 
 ## Installation
+
+### One-command workflow
+
+Use the combined workflow for a rooted device and a realistic wireless setup:
+
+```bash
+cd /workspaces/Nethunter_4_KSU
+./setup-and-build.sh /path/to/kali-nethunter-*-arm64-*.zip
+```
+
+This single entry point:
+- checks the rooted-device assumptions
+- checks the root manager state
+- verifies the official NetHunter ARM64 payloads
+- extracts the required APKs and chroot archive
+- runs the validated module build
+- keeps the monitor-mode warnings honest for the specific chipset in use
 
 ### Step 1: Download the Original NetHunter Module
 
@@ -31,18 +51,30 @@ Flashable Kali NetHunter module for rooted Android with Magisk or KernelSU Next.
 
 ### Step 2: Extract Required Files
 
-1. Unzip the downloaded NetHunter module ZIP.
-2. Locate the `data/app/` folder and `kalifs-minimal-arm64.tar.xz` file inside the extracted archive.
-3. Copy `data/app/` and `kalifs-minimal-arm64.tar.xz` to the root folder of this repository (where `module.prop`, `post-fs-data.sh`, etc., are located).
+1. Download the official ARM64 NetHunter archive.
+2. Pass its path directly to `setup-and-build.sh`; it validates and extracts the required APKs and chroot archive locally.
 
 ### Step 3: Repackage the Module
 
-1. Ensure all files are in the correct structure (no extra top-level folders).
-2. Zip the entire contents into a new ZIP file (e.g., `nethunter-ksu.zip`). Use a command like:
-   ```bash
-   cd /path/to/repo
-   zip -r ../nethunter-ksu.zip *
-   ```
+1. Ensure the archive has been processed into the repository by the combined workflow.
+2. Run the validated builder from the repository root:
+
+    ```bash
+    ./build-module.sh
+    ```
+
+    The build stops if any required APK, `kalifs-minimal-arm64.tar.xz`, or installer script is missing. The output is `nethunter-ksu-xt2513v.zip`.
+
+    The generated ZIP is intentionally ignored by Git because GitHub does not accept files of this size in a normal repository. Keep it locally or publish it as a GitHub Release asset.
+
+3. If you are using a rooted phone in a real-world KernelSU setup, you can also use the local helper CLI:
+
+    ```bash
+    ./pentest-ai.sh root-check
+    ./pentest-ai.sh monitor-check
+    ```
+
+    This helper checks the environment and gives realistic monitor-mode guidance without pretending every adapter supports every wireless attack mode.
 
 ### Step 4: Flash via KernelSU
 
@@ -52,6 +84,8 @@ Flashable Kali NetHunter module for rooted Android with Magisk or KernelSU Next.
 4. Select and flash the ZIP.
 5. Reboot your device.
 6. Open the NetHunter app and complete the setup (update via NetHunter Store if prompted).
+
+This package targets the ARM64 Moto G XT2513V. It does not flash a kernel; do not add a kernel ZIP unless it is specifically built for this exact device.
 
 ## Usage
 

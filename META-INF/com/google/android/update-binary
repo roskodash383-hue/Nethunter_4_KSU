@@ -63,9 +63,9 @@ extract_file() {
 #------------------------------------------------------------------------------
 
 #<REF: ./scripts/util_functions.sh>
-[ -z $BOOTMODE ] && ps | grep zygote | grep -qv grep && BOOTMODE=true
-[ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
-[ -z $BOOTMODE ] && BOOTMODE=false
+[ -z "${BOOTMODE:-}" ] && ps | grep zygote | grep -qv grep && BOOTMODE=true
+[ -z "${BOOTMODE:-}" ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
+[ -z "${BOOTMODE:-}" ] && BOOTMODE=false
 # Detect KernelSU/KernelSU-Next environments
 if [ -z "$KERNELSU" ]; then
   if [ -d /data/adb/ksud ] || [ -d /data/adb/ksu ] || command -v ksu >/dev/null 2>&1; then

@@ -36,7 +36,9 @@ res=$(wm size | grep "Physical size:" | cut -d' ' -f3 2>/dev/null)
   ## Try the old method for old devices (Method #3)
   res=$($TMP/tools/screenres)
 
-  ([ -z "$res" ] || [[ "$res" == *"failed"* ]]) && unset res
+  case "$res" in
+    ""|*failed*) unset res ;;
+  esac
 }
 
 ## Give up if resolution is still not found

@@ -20,7 +20,7 @@ prepare_sh() {
 }
 
 make_chroot() {
-  command -v busybox &>/dev/null || abort "BusyBox not found"
+  command -v busybox >/dev/null 2>&1 || abort "BusyBox not found"
   [ ! -e "$(command -v busybox)" ] && abort "BusyBox missing"
 
   ## Create suitable environment to flash

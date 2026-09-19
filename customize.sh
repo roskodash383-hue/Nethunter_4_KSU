@@ -8,7 +8,10 @@ cd $TMPDIR/
 DEBUG=1
 
 echo "* Unpacking nethunter script"
-unzip -o "$ZIPFILE" META-INF/com/google/android/update-binary -d $TMPDIR || print "! Failed to extract"
+unzip -o "$ZIPFILE" META-INF/com/google/android/update-binary -d "$TMPDIR" || {
+	echo "! Failed to extract update-binary" >&2
+	exit 1
+}
 
 echo "* Running nethunter script"
 [ -f $TMPDIR/META-INF/com/google/android/update-binary ] && source $TMPDIR/META-INF/com/google/android/update-binary 2>&1   # Don't spawn a new session (aka using sh), do in current session (able to pass variables/functions)

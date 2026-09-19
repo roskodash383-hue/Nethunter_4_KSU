@@ -17,7 +17,7 @@ fi
 rm -f $XBIN/busybox_nh
 cd $XBIN/
 busybox_nh=$( (ls -v busybox_nh-* || ls busybox_nh-*) | tail -n 1 ) # Alt: BB_latest=$( (ls -v busybox_nh-* 2>/dev/null || ls busybox_nh-*) | tail -n 1)
-[ -z "$busybox_nh" ] && print "! Failed to find busybox_nh in $XBIN" && return 1
+[ -z "$busybox_nh" ] && echo "! Failed to find busybox_nh in $XBIN" >&2 && exit 1
 #BB=$XBIN/$busybox_nh # Use NetHunter BusyBox from ./arch/<arch>/tools/ # Alt: export BB=$TMP/$busybox_nh
 ln -sf $XBIN/$busybox_nh busybox_nh # Alt: $XBIN/$busybox_nh ln -sf $busybox_nh busybox_nh
 
